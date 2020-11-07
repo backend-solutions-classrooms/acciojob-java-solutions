@@ -17,10 +17,9 @@ const stdin = `
 `.trim()
 
 const expectedOutput = `
-5
-10
 15
-20
+30
+45
 `
 	.trim()
 	.split('\n')
