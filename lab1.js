@@ -7,6 +7,7 @@
 // * The results file should have a JSON array with ONLY "true" or "false" values (booleans) as elements having one-to-one correspondance to challenges you design
 
 const { execSync } = require('child_process')
+const fs = require('fs')
 
 const expectedOutput = `
 5
