@@ -6,8 +6,15 @@
 // * process.env.UNIT_TEST_OUTPUT_FILE is the name of the file where results of UNIT tests should be put
 // * The results file should have a JSON array with ONLY "true" or "false" values (booleans) as elements having one-to-one correspondance to challenges you design
 
-const { execSync } = require('child_process')
+const { exec } = require('child_process')
 const fs = require('fs')
+
+const stdin = `
+3
+5
+10
+15
+`.trim()
 
 const expectedOutput = `
 5
@@ -18,19 +25,25 @@ const expectedOutput = `
 	.trim()
 	.split('\n')
 
-const output = execSync(
-	`cd ${process.env.USER_CODE_DIR} && javac HelloWorld.java && java HelloWorld`
-)
+const java = exec(`cd ${process.env.USER_CODE_DIR} && javac HelloWorld.java && java HelloWorld`)
+java.stdin.write(stdin + '\n')
 
-const realOutput = output.toString().trim().split('\n')
+let _realOutput = ''
 
-const results = []
+java.stdout.on('data', (data) => {
+	_realOutput += data.toString()
+})
 
-for (let i = 0; i < expectedOutput.length; i++) {
-	const expectedRow = expectedOutput[i]
-	const actualRow = realOutput[i]
-	results.push(expectedRow === actualRow)
-}
+java.stdout.on('close', () => {
+	const results = []
+	const realOutput = _realOutput.trim().split('\n')
 
-fs.writeFileSync(process.env.UNIT_TEST_OUTPUT_FILE, JSON.stringify(results))
-process.exit(0)
+	for (let i = 0; i < expectedOutput.length; i++) {
+		const expectedRow = expectedOutput[i]
+		const actualRow = realOutput[i]
+		results.push(expectedRow === actualRow)
+	}
+
+	fs.writeFileSync(process.env.UNIT_TEST_OUTPUT_FILE, JSON.stringify(results))
+	process.exit(0)
+})
